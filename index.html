@@ -28,6 +28,15 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
+    select {
+      width: 100%;
+      font-size: 1.2em;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
     label {
       font-weight: 600;
       margin-top: 15px;
@@ -80,6 +89,11 @@
   <h1>Calculadora Heparina</h1>
 
   <div class="card">
+    <label for="tipo">Tipo de cálculo</label>
+    <select id="tipo">
+      <option value="60">30.000 uds/500 ml</option>
+      <option value="18">9.000 uds/500 ml</option>
+    </select>
     <label for="peso">Peso del paciente (kg)</label>
     <input type="number" id="peso" inputmode="decimal" step="0.1">
 
@@ -90,8 +104,8 @@
 
     <div class="resultado" id="resultado"></div>
 
-    <div class="nota">
-      Uso orientativo. Sirve para 30.000 uds/500 ml.
+    <div class="nota" id="nota">
+      <!-- Uso orientativo. Sirve para 30.000 uds/500 ml. -->
     </div>
   </div>
 
@@ -99,16 +113,25 @@
     function calcular() {
       const peso = parseFloat(document.getElementById("peso").value);
       const dosis = parseFloat(document.getElementById("dosis").value);
+      const tipo = parseFloat(document.getElementById("tipo").value);
 
       if (isNaN(peso) || isNaN(dosis)) {
         document.getElementById("resultado").innerText = "Introduce todos los valores";
         return;
       }
 
-      const total = peso * dosis/60; // Convertir a ml/h
+      const total = peso * dosis/tipo; // Convertir a ml/h
 
       document.getElementById("resultado").innerText =
         "Dosis total: " + total.toFixed(2) + "  ml/h";
+
+      const nota = document.getElementById("nota");
+
+      if (tipo === 60) {
+        nota.innerText = "Calculado para 30.000 uds/500 ml.";
+      } else {
+        nota.innerText = "Calculado para 9.000 uds/500 ml.";
+      }
     }
   </script>
 
