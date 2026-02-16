@@ -92,7 +92,7 @@
     <label for="tipo">Tipo de cálculo</label>
     <select id="tipo">
       <option value="60">30.000 uds/500 ml</option>
-      <option value="50">10.000 uds/200 ml</option>
+      <option value="200">10.000 uds/50 ml</option>
     </select>
     <label for="peso">Peso del paciente (kg)</label>
     <input type="number" id="peso" inputmode="decimal" step="0.1">
@@ -130,7 +130,7 @@
       if (tipo === 60) {
         nota.innerText = "Calculado para 30.000 uds/500 ml.";
       } else {
-        nota.innerText = "Calculado para 10.000 uds/200 ml.";
+        nota.innerText = "Calculado para 10.000 uds/50 ml.";
       }
     }
   </script>
