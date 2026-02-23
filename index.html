@@ -137,7 +137,7 @@
       mlhInput.disabled = true;
       dosisInput.classList.add("activo");
       mlhInput.value = "";
-      formula.innerText = "Fórmula: velocidad = peso × dosis ÷ concentración";
+      formula.innerText = "Fórmula: velocidad = (peso × dosis) ÷ concentración";
     } else {
       // colocar la casilla de ml/h antes del botón y la de dosis después
       bloque.insertBefore(bloqueMlh, invertirBtn);
@@ -146,7 +146,7 @@
       dosisInput.disabled = true;
       mlhInput.classList.add("activo");
       dosisInput.value = "";
-      formula.innerText = "Fórmula: dosis = velocidad × concentración ÷ peso";
+      formula.innerText = "Fórmula: dosis = (velocidad × concentración) ÷ peso";
     }
   }
 
