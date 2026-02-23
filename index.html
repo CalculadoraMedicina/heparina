@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculadora médica rápida</title>
+  <title>Calculadora Heparina</title>
 
   <style>
     body {
@@ -28,51 +28,42 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    select {
-      width: 100%;
-      font-size: 1.2em;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
     label {
       font-weight: 600;
       margin-top: 15px;
       display: block;
     }
 
-    input {
+    select, input {
       width: 100%;
       font-size: 1.2em;
       padding: 10px;
       margin-top: 5px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 2px solid #ccc;
+      background: #f9fafb;
+    }
+
+    input.activo {
+      border-color: #007aff;
+      background: #eef5ff;
     }
 
     button {
       width: 100%;
-      margin-top: 20px;
-      padding: 15px;
-      font-size: 1.2em;
+      margin: 15px 0;
+      padding: 14px;
+      font-size: 1.1em;
       border: none;
       border-radius: 10px;
-      background: #007aff;
-      color: white;
+      background: #e5e7eb;
+      color: #111;
       font-weight: bold;
     }
 
-    button:active {
-      background: #005ecb;
-    }
-
-    .resultado {
-      margin-top: 25px;
-      font-size: 1.4em;
-      font-weight: bold;
-      text-align: center;
+    .bloque-calculo {
+      display: flex;
+      flex-direction: column;
     }
 
     .nota {
@@ -86,54 +77,121 @@
 
 <body>
 
-  <h1>Calculadora Heparina</h1>
+<h1>Calculadora Heparina</h1>
 
-  <div class="card">
-    <label for="tipo">Tipo de cálculo</label>
-    <select id="tipo">
-      <option value="60">30.000 uds/500 ml</option>
-      <option value="200">10.000 uds/50 ml</option>
-    </select>
-    <label for="peso">Peso del paciente (kg)</label>
-    <input type="number" id="peso" inputmode="decimal" step="0.1">
+<div class="card">
 
-    <label for="dosis">Dosis (uds/kg por hora)</label>
-    <input type="number" id="dosis" inputmode="decimal" step="0.1">
+  <label for="tipo">Concentración</label>
+  <select id="tipo" onchange="calcular()">
+    <option value="60">30.000 uds / 500 ml (60 uds/ml)</option>
+    <option value="200">10.000 uds / 50 ml (200 uds/ml)</option>
+  </select>
 
-    <button onclick="calcular()">Calcular dosis total</button>
+  <label for="peso">Peso del paciente (kg)</label>
+  <input type="number" id="peso" inputmode="decimal" step="0.1">
 
-    <div class="resultado" id="resultado"></div>
+  <div class="bloque-calculo" id="bloque">
 
-    <div class="nota" id="nota">
-      <!-- Uso orientativo. Sirve para 30.000 uds/500 ml. -->
+    <div id="bloque-dosis">
+      <label for="dosis">Dosis (uds/kg/h)</label>
+      <input type="number" id="dosis" inputmode="decimal" step="0.1">
     </div>
+
+    <button type="button" onclick="invertir()">⇅ Invertir cálculo</button>
+
+    <div id="bloque-mlh">
+      <label for="mlh">Velocidad (ml/h)</label>
+      <input type="number" id="mlh" inputmode="decimal" step="0.1">
+    </div>
+
   </div>
 
-  <script>
-    function calcular() {
-      const peso = parseFloat(document.getElementById("peso").value);
-      const dosis = parseFloat(document.getElementById("dosis").value);
-      const tipo = parseFloat(document.getElementById("tipo").value);
+  <div class="nota" id="nota"></div>
+  <div class="nota" id="formula"></div>
 
-      if (isNaN(peso) || isNaN(dosis)) {
-        document.getElementById("resultado").innerText = "Introduce todos los valores";
+</div>
+
+<script>
+  let modo = "ml"; // ml = calcular ml/h desde dosis
+
+  const pesoInput = document.getElementById("peso");
+  const dosisInput = document.getElementById("dosis");
+  const mlhInput = document.getElementById("mlh");
+  const tipoSelect = document.getElementById("tipo");
+  const nota = document.getElementById("nota");
+  const formula = document.getElementById("formula");
+  const bloque = document.getElementById("bloque");
+  const bloqueDosis = document.getElementById("bloque-dosis");
+  const bloqueMlh = document.getElementById("bloque-mlh");
+  const invertirBtn = bloque.querySelector('button');
+
+  function actualizarModo() {
+    dosisInput.classList.remove("activo");
+    mlhInput.classList.remove("activo");
+
+    if (modo === "ml") {
+      // colocar la casilla de dosis antes del botón y la de ml/h después
+      bloque.insertBefore(bloqueDosis, invertirBtn);
+      bloque.insertBefore(bloqueMlh, null);
+      dosisInput.disabled = false;
+      mlhInput.disabled = true;
+      dosisInput.classList.add("activo");
+      mlhInput.value = "";
+      formula.innerText = "Fórmula: velocidad = peso × dosis ÷ concentración";
+    } else {
+      // colocar la casilla de ml/h antes del botón y la de dosis después
+      bloque.insertBefore(bloqueMlh, invertirBtn);
+      bloque.insertBefore(bloqueDosis, null);
+      mlhInput.disabled = false;
+      dosisInput.disabled = true;
+      mlhInput.classList.add("activo");
+      dosisInput.value = "";
+      formula.innerText = "Fórmula: dosis = velocidad × concentración ÷ peso";
+    }
+  }
+
+  function invertir() {
+    modo = (modo === "ml") ? "dosis" : "ml";
+    dosisInput.value = "";
+    mlhInput.value = "";
+    nota.innerText = "";
+    actualizarModo();
+  }
+
+  function calcular() {
+    const peso = parseFloat(pesoInput.value);
+    const tipo = parseFloat(tipoSelect.value);
+
+    if (isNaN(peso) || peso <= 0) return;
+
+    if (modo === "ml") {
+      const dosis = parseFloat(dosisInput.value);
+      if (isNaN(dosis)) {
+        mlhInput.value = "";
         return;
       }
-
-      const total = peso * dosis/tipo; // Convertir a ml/h
-
-      document.getElementById("resultado").innerText =
-        "Dosis total: " + total.toFixed(2) + "  ml/h";
-
-      const nota = document.getElementById("nota");
-
-      if (tipo === 60) {
-        nota.innerText = "Calculado para 30.000 uds/500 ml.";
-      } else {
-        nota.innerText = "Calculado para 10.000 uds/50 ml.";
+      mlhInput.value = ((peso * dosis) / tipo).toFixed(2);
+    } else {
+      const mlh = parseFloat(mlhInput.value);
+      if (isNaN(mlh)) {
+        dosisInput.value = "";
+        return;
       }
+      dosisInput.value = ((mlh * tipo) / peso).toFixed(2);
     }
-  </script>
+
+    nota.innerText =
+      tipo === 60
+        ? "Calculado para 30.000 uds en 500 ml."
+        : "Calculado para 10.000 uds en 50 ml.";
+  }
+
+  dosisInput.addEventListener("input", calcular);
+  mlhInput.addEventListener("input", calcular);
+  pesoInput.addEventListener("input", calcular);
+
+  actualizarModo();
+</script>
 
 </body>
 </html>
